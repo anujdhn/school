@@ -19,9 +19,10 @@ class DiscountGroup extends Model
     /**
      * | Read Discount Group by Discount Group
      */
-    public function readGroupByDiscountGroup($discountGroup)
+    public function readGroupByDiscountGroup($discountGroup, $academicYear)
     {
         return DiscountGroup::where('discount_group', $discountGroup)
+            ->where('academic_year', $academicYear)
             ->where('status', 1)
             ->get();
     }
