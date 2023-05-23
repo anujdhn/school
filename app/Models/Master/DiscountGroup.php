@@ -15,4 +15,14 @@ class DiscountGroup extends Model
     {
         DiscountGroup::create($req);
     }
+
+    /**
+     * | Read Discount Group by Discount Group
+     */
+    public function readGroupByDiscountGroup($discountGroup)
+    {
+        return DiscountGroup::where('discount_group', $discountGroup)
+            ->where('status', 1)
+            ->get();
+    }
 }
