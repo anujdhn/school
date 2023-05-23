@@ -1,0 +1,14 @@
+Problems and Solutions 
+
+1:  For Sanctum Token Integration:-
+    1.1:  Using Sanctum: Always use Hash password to store in table for generate Sanctum Token
+    1.2:  Some setting needs to do when we use Sanctum Token i.e; Http->kernal.php we must add this 
+    'api' => [
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ],
+2: csrf token issue when using swagger: in middleware folder -> verifycsrftoken file we have to add 
+this code ->  "/api/*" inside the except array. added swagger code in controller
+
+
