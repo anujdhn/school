@@ -269,9 +269,9 @@ Route::controller(EmployeeController::class)->group(function() {
 
 Route::controller(FeeController::class)->group(function(){
 
-    Route::post('/add_feehead_type','addFeeHeadType');//Add -------------------------------------------- API_ID_235
-    Route::post('/view_feehead_type','viewFeeHeadType');//View ------------------------------------------ API_ID_236
-    Route::post('/view_feehead_type_byId','viewFeeHeadTypeById');//View By ID -------------------------- API_ID_237
+    Route::post('/add_feehead_type','postFeeHeadType');//Add -------------------------------------------- API_ID_235
+    Route::post('/view_feehead_type','readFeeHeadType');//View ------------------------------------------ API_ID_236
+    Route::post('/view_feehead_type_byId','getFeeHeadTypeById');//View By ID -------------------------- API_ID_237
     Route::post('/edit_feehead_type','editFeeHeadType');//Edit By ID -------------------------- -------- API_ID_238
     Route::post('/delete_feehead_type','deleteFeeHeadType');//Delete By ID -----------------------   --- API_ID_239
     
