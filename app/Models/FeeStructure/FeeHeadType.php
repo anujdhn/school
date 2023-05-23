@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class FeeHeadType extends Model
 {
     use HasFactory;
-    protected $table = 'fee_head_types';
-
+    // protected $table = 'fee_head_types';
     protected $guarded=[];
 
     public function store(array $req){

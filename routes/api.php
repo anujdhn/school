@@ -267,6 +267,10 @@ Route::controller(EmployeeController::class)->group(function() {
     Route::post('/search_employee_by_id','searchEmpByEmpId'); //search BY ID --------------------------- API_ID_197  
 });
 
+Route::controller(FeeController::class)->group(function () {
+    Route::post('feehead-type/crud/store', 'store');
+});
+
 Route::controller(FeeController::class)->group(function(){
 
     Route::post('/add_feehead_type','postFeeHeadType');//Add -------------------------------------------- API_ID_235
