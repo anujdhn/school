@@ -125,7 +125,7 @@ class DiscountGroupController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $discountGroup = $this->_mDiscountGroups::findOrFail($req->id);
+            $discountGroup = $this->_mDiscountGroups->getGroupById($req->id);
             return responseMsgs(true, "", $discountGroup, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -138,7 +138,7 @@ class DiscountGroupController extends Controller
     public function retrieveAll(Request $req)
     {
         try {
-            $discountGroup = $this->_mDiscountGroups::orderByDesc('id')->get();
+            $discountGroup = $this->_mDiscountGroups->retrieveAll();
             return responseMsgs(true, "", $discountGroup, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
