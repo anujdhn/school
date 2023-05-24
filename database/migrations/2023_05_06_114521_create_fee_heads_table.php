@@ -16,12 +16,12 @@ return new class extends Migration
             $table->integer('fee_head_type_id');
             $table->string('fee_head');
             $table->string('description');
-            $table->string('academic_year');            //common for all table
-            $table->string('school_id');                //common for all table         
-            $table->string('created_by');               //common for all table   
-            $table->string('ip_address');               //common for all table   
-            $table->integer('version_no')->default(0);  //common for all table   
-            $table->integer('status')->default(1);      //1-Active, 2-Not Active
+            $table->string('academic_year')->nullable();                //common for all table
+            $table->bigInteger('school_id')->nullable();                //common for all table         
+            $table->bigInteger('created_by')->nullable();               //common for all table   
+            $table->string('ip_address');                   //common for all table   
+            $table->integer('version_no')->default(0);      //common for all table   
+            $table->smallInteger('status')->default(1);     //1-Active, 2-Not Active
             $table->timestamps();
         });
     }

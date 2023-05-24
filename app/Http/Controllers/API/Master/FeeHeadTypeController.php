@@ -30,8 +30,7 @@ class FeeHeadTypeController extends Controller
             'feeHeadType' => 'required|string',
             'isAnnual' => 'required|numeric',
             'isOptional' => 'required|numeric',
-            'isLateFineApplicable' => 'required|numeric',
-            'academicYear' => 'required|string'
+            'isLateFineApplicable' => 'required|numeric'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
@@ -40,18 +39,17 @@ class FeeHeadTypeController extends Controller
             $isExists = $this->_mFeeHeadTypes->readFeeHeadTypeById($req->feeHeadType);
             if (collect($isExists)->isNotEmpty())
                 throw new Exception("Fee Head Type Already existing");
-            $ip = getClientIpAddress();
-            $createdBy = 'Admin';
-            $schoolId = 'DAV_Ranchi_834001';
+            $fy =  getFinancialYear(Carbon::now()->format('Y-m-d'));
+            // echo authUser(); die;
             $metaReqs=[
                 'fee_head_type' => Str::ucFirst($req->feeHeadType),
                 'is_annual' => $req->isAnnual,
                 'is_optional' => $req->isOptional,
                 'is_latefee_applicable' => $req->isLateFineApplicable,
-                'academic_year' => $req->academicYear,
-                'school_id' => $schoolId,
-                'created_by' => $createdBy,
-                'ip_address' => $ip
+                'academic_year' => $fy,
+                'school_id' => authUser()->school_id,
+                'created_by' => authUser()->id,
+                'ip_address' => getClientIpAddress()
             ];
             $this->_mFeeHeadTypes->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -72,7 +70,6 @@ class FeeHeadTypeController extends Controller
             'isAnnual' => 'required|numeric',
             'isOptional' => 'required|numeric',
             'isLateFineApplicable' => 'required|numeric',
-            'academicYear' => 'required|string',
             'status' => 'nullable|in:active,deactive'
         ]);
         if ($validator->fails())
@@ -82,12 +79,13 @@ class FeeHeadTypeController extends Controller
             $isExists = $this->_mFeeHeadTypes->readFeeHeadTypeById($req->feeHeadType);
             if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
                 throw new Exception("Fee Head Type Already Existing");
+            $getData = $this->_mFeeHeadTypes::findOrFail($req->id);            
             $metaReqs = [ 
                 'fee_head_type' => Str::ucFirst($req->feeHeadType),
                 'is_annual' => $req->isAnnual,
                 'is_optional' => $req->isOptional,
                 'is_latefee_applicable' => $req->isLateFineApplicable,
-                'academic_year' => $req->academicYear,
+                'version_no' => $getData->version_no + 1,
                 'updated_at' => Carbon::now()
             ];
 

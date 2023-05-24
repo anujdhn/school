@@ -44,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
 //Master : Public Routes 
 Route::controller(MasterController::class)->group(function() {
     Route::post('/add_class','addClassTable'); //Add Class --------------------------------------------- API_ID_10
-    Route::get('/view_class','viewClassTable'); // View Class ------------------------------------------ API_ID_11
+    Route::post('/view_class','viewClassTable'); // View Class ------------------------------------------ API_ID_11
     Route::post('/view_class_by_id','viewClassTableById'); //View Class By ID -------------------------- API_ID_12
     Route::post('/edit_class','editClassTable'); //Edit Class ------------------------------------------ API_ID_13
     Route::post('/delete_class','deleteClassTableById');//Delete Class --------------------------------- API_ID_14

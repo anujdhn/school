@@ -43,19 +43,19 @@ class ClassFeeMasterController extends Controller
             'leviedInSep' => 'required|numeric',
             'leviedInOct' => 'required|numeric',
             'leviedInNov' => 'required|numeric',
-            'leviedInDec' => 'required|numeric',            
-            'academicYear' => 'required|string'
+            'leviedInDec' => 'required|numeric'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mClassFeeMasters->readClassFeeMasterById($req->classFeeMaster);
-            if (collect($isExists)->isNotEmpty())
-                throw new Exception("Class Fee Master Already existing");
-            $ip = getClientIpAddress();
-            $createdBy = 'Admin';
-            $schoolId = 'DAV_Ranchi_834001';
+            $isMappingExists = $this->_mClassFeeMasters->getClassFeeMasterGroupMaps($req);
+            if (collect($isMappingExists)->isNotEmpty())
+                throw new Exception('Record Already Existing');
+            // $isExists = $this->_mClassFeeMasters->readClassFeeMasterGroup($req->classFeeMaster);
+            // if (collect($isExists)->isNotEmpty())
+            //     throw new Exception("Class Fee Master Already existing");
+            $fy =  getFinancialYear(Carbon::now()->format('Y-m-d'));
             $metaReqs=[                
                 'class_id' => $req->classId,
                 'fee_head_id' => $req->feeHeadId,
@@ -74,10 +74,10 @@ class ClassFeeMasterController extends Controller
                 'levied_in_oct' => $req->leviedInOct,
                 'levied_in_nov' => $req->leviedInNov,
                 'levied_in_dec' => $req->leviedInDec,
-                'academic_year' => $req->academicYear,
-                'school_id' => $schoolId,
-                'created_by' => $createdBy,
-                'ip_address' => $ip
+                'academic_year' => $fy,
+                'school_id' => authUser()->school_id,
+                'created_by' => authUser()->id,
+                'ip_address' => getClientIpAddress()
             ];
             $this->_mClassFeeMasters->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -111,19 +111,23 @@ class ClassFeeMasterController extends Controller
             'leviedInOct' => 'required|numeric',
             'leviedInNov' => 'required|numeric',
             'leviedInDec' => 'required|numeric',
-            'academicYear' => 'required|string',
             'status' => 'nullable|in:active,deactive'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mClassFeeMasters->readClassFeeMasterById($req->classFeeMaster);
-            if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
-                throw new Exception("Class Fee Master Already Existing");
+            $isMappingExists = $this->_mClassFeeMasters->getClassFeeMasterGroupMaps($req);
+            if (collect($isMappingExists)->isNotEmpty() && $isMappingExists->where('id', '!=', $req->id)->isNotEmpty())
+                throw new Exception('Record Already Existing');
+
+            $getData = $this->_mClassFeeMasters::findOrFail($req->id);
+
+            // $isExists = $this->_mClassFeeMasters->readClassFeeMasterGroup($req->classFeeMaster);
+            // if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
+            //     throw new Exception("Class Fee Master Already Existing");
+            // $getData = $this->_mClassFeeMasters::findOrFail($req->id);
             $metaReqs = [ 
-                'class_id' => $req->classId,
-                'fee_head_id' => $req->feeHeadId,
                 'fee_amount' => $req->feeAmount,
                 'discount' => $req->discount,
                 'net_fee' => $req->netFee,
@@ -139,7 +143,7 @@ class ClassFeeMasterController extends Controller
                 'levied_in_oct' => $req->leviedInOct,
                 'levied_in_nov' => $req->leviedInNov,
                 'levied_in_dec' => $req->leviedInDec,
-                'academic_year' => $req->academicYear,               
+                'version_no' => $getData->version_no + 1,
                 'updated_at' => Carbon::now()
             ];
 
@@ -168,9 +172,11 @@ class ClassFeeMasterController extends Controller
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
+        
         try {
-            $classFeeMaster = $this->_mClassFeeMasters::findOrFail($req->id);
-            return responseMsgs(true, "", $classFeeMaster, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // $classFeeMaster = $this->_mClassFeeMasters::findOrFail($req->id);
+            $classFeeMastersGroupMap = $this->_mClassFeeMasters->getGroupMapById($req->id);
+            return responseMsgs(true, "Records", $classFeeMastersGroupMap, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
@@ -182,8 +188,9 @@ class ClassFeeMasterController extends Controller
     public function retrieveAll(Request $req)
     {
         try {
-            $classFeeMaster = $this->_mClassFeeMasters::orderByDesc('id')->get();
-            return responseMsgs(true, "", $classFeeMaster, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // $classFeeMaster = $this->_mClassFeeMasters::orderByDesc('id')->get();
+            $classFeeMastersGroupMap = $this->_mClassFeeMasters->retrieveAll();
+            return responseMsgs(true, "All Records", $classFeeMastersGroupMap, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }

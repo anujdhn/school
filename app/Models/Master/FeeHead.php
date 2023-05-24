@@ -21,14 +21,14 @@ class FeeHead extends Model
     /**
     * | Read Records by ID
     */
-   public function readFeeHeadById($FeeHead)
+   public function readFeeHeadGroup($FeeHead)
    {
        return FeeHead::where('fee_head', $FeeHead)
            ->where('status', 1)
            ->get();
    }
 
-   public function showById($id){
+   public function getGroupById($id){
     return DB::table('fee_heads as fh')
     ->select('ft.fee_head_type', 'fh.fee_head', 'fh.description', 'fh.academic_year', 'fh.status')
     ->join('fee_head_types as ft', 'ft.id', '=', 'fh.fee_head_type_id') 
@@ -38,8 +38,9 @@ class FeeHead extends Model
 
    public function retrieveAll(){
     return DB::table('fee_heads as fh')
-    ->select('ft.fee_head_type', 'fh.fee_head', 'fh.description', 'fh.academic_year', 'fh.status')
+    ->select('ft.fee_head_type', 'fh.fee_head', 'fh.description', 'fh.academic_year', 'fh.status','fh.id')
     ->join('fee_head_types as ft', 'ft.id', '=', 'fh.fee_head_type_id')
     ->get();
    }
+   
 }

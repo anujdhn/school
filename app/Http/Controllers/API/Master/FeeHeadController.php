@@ -29,27 +29,24 @@ class FeeHeadController extends Controller
         $validator = Validator::make($req->all(), [
             'feeHeadTypeId' => 'required|numeric',
             'feeHead' => 'required|string',
-            'description' => 'required|string',
-            'academicYear' => 'required|string'
+            'description' => 'required|string'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeHeads->readFeeHeadById($req->feeHead);
+            $isExists = $this->_mFeeHeads->readFeeHeadGroup($req->feeHead);
             if (collect($isExists)->isNotEmpty())
                 throw new Exception("Fee Head Already existing");
-            $ip = getClientIpAddress();
-            $createdBy = 'Admin';
-            $schoolId = 'DAV_Ranchi_834001';
+            $fy =  getFinancialYear(Carbon::now()->format('Y-m-d'));
             $metaReqs=[                
                 'fee_head_type_id' => $req->feeHeadTypeId,
                 'fee_head' => Str::ucFirst($req->feeHead),
                 'description' => $req->description,
-                'academic_year' => $req->academicYear,
-                'school_id' => $schoolId,
-                'created_by' => $createdBy,
-                'ip_address' => $ip
+                'academic_year' => $fy,
+                'school_id' => authUser()->school_id,
+                'created_by' => authUser()->id,
+                'ip_address' => getClientIpAddress()
             ];
             $this->_mFeeHeads->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -69,21 +66,21 @@ class FeeHeadController extends Controller
             'feeHeadTypeId' => 'required|numeric',
             'feeHead' => 'required|string',
             'description' => 'required|string',
-            'academicYear' => 'required|string',
             'status' => 'nullable|in:active,deactive'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeHeads->readFeeHeadById($req->feeHead);
+            $isExists = $this->_mFeeHeads->readFeeHeadGroup($req->feeHead);
             if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
                 throw new Exception("Fee Head Already Existing");
+            $getData = $this->_mFeeHeads::findOrFail($req->id);
             $metaReqs = [                 
                 'fee_head_type_id' => $req->feeHeadTypeId,
                 'fee_head' => Str::ucFirst($req->feeHead),
                 'description' => $req->description,
-                'academic_year' => $req->academicYear,
+                'version_no' => $getData->version_no + 1,
                 'updated_at' => Carbon::now()
             ];
 
@@ -114,7 +111,7 @@ class FeeHeadController extends Controller
             return responseMsgs(false, $validator->errors(), []);
         try {
             // $feeHead = $this->_mFeeHeads::findOrFail($req->id);
-            $feeHead = $this->_mFeeHeads->showById($req->id);
+            $feeHead = $this->_mFeeHeads->getGroupById($req->id);
             // print_r($feeHead);die;
             return responseMsgs(true, "", $feeHead, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {

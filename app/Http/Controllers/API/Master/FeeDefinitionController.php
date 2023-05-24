@@ -27,7 +27,7 @@ class FeeDefinitionController extends Controller
     public function store(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'clasId' => 'required|numeric',
+            'classId' => 'required|numeric',
             'janFee' => 'required|numeric',
             'janBusFee' => 'required|numeric',           
             'febFee' => 'required|numeric',
@@ -51,21 +51,21 @@ class FeeDefinitionController extends Controller
             'novFee' => 'required|numeric',
             'novBusFee' => 'required|numeric',
             'decFee' => 'required|numeric',
-            'decBusFee' => 'required|numeric',
-            'academicYear' => 'required|string'
+            'decBusFee' => 'required|numeric'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeDefinitions->readFeeDefinitionById($req->feeDefinition);
-            if (collect($isExists)->isNotEmpty())
-                throw new Exception("Fee Definition Already existing");
-            $ip = getClientIpAddress();
-            $createdBy = 'Admin';
-            $schoolId = 'DAV_Ranchi_834001';
+            // $isExists = $this->_mFeeDefinitions->readFeeDefinitionById($req->feeDefinition);
+            // if (collect($isExists)->isNotEmpty())
+            //     throw new Exception("Fee Definition Already existing");
+            $isMappingExists = $this->_mFeeDefinitions->getFeeDefinitionGroupMaps($req);
+            if (collect($isMappingExists)->isNotEmpty())
+                throw new Exception('Record Already Existing');
+            $fy =  getFinancialYear(Carbon::now()->format('Y-m-d'));
             $metaReqs=[                
-                'class_id' => $req->fyId,
+                'class_id' => $req->classId,
                 'jan_fee' => $req->janFee,
                 'jan_bus_fee' => $req->janBusFee,
                 'feb_fee' => $req->febFee,
@@ -90,11 +90,12 @@ class FeeDefinitionController extends Controller
                 'nov_bus_fee' => $req->novBusFee,
                 'dec_fee' => $req->decFee,
                 'dec_bus_fee' => $req->decBusFee,
-                'academic_year' => $req->academicYear,
-                'school_id' => $schoolId,
-                'created_by' => $createdBy,
-                'ip_address' => $ip
+                'academic_year' => $fy,
+                'school_id' => authUser()->school_id,
+                'created_by' => authUser()->id,
+                'ip_address' => getClientIpAddress()
             ];
+            // print_r($metaReqs); die;
             $this->_mFeeDefinitions->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -110,7 +111,7 @@ class FeeDefinitionController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|numeric',
-            'clasId' => 'required|numeric',
+            // 'clasId' => 'required|numeric',
             'janFee' => 'required|numeric',
             'janBusFee' => 'required|numeric',           
             'febFee' => 'required|numeric',
@@ -135,16 +136,21 @@ class FeeDefinitionController extends Controller
             'novBusFee' => 'required|numeric',
             'decFee' => 'required|numeric',
             'decBusFee' => 'required|numeric',
-            'academicYear' => 'required|string',
             'status' => 'nullable|in:active,deactive'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeDefinitions->readFeeDefinitionById($req->feeDefinition);
-            if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
-                throw new Exception("Fee Definition Already Existing");
+            // $isExists = $this->_mFeeDefinitions->readFeeDefinitionById($req->feeDefinition);
+            // if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
+            //     throw new Exception("Fee Definition Already Existing");
+
+            $isMappingExists = $this->_mFeeDefinitions->getFeeDefinitionGroupMaps($req);
+            if (collect($isMappingExists)->isNotEmpty() && $isMappingExists->where('id', '!=', $req->id)->isNotEmpty())
+                throw new Exception('Record Already Existing');
+
+            $getData = $this->_mFeeDefinitions::findOrFail($req->id);
             $metaReqs = [ 
                 'jan_fee' => $req->janFee,
                 'jan_bus_fee' => $req->janBusFee,
@@ -170,7 +176,7 @@ class FeeDefinitionController extends Controller
                 'nov_bus_fee' => $req->novBusFee,
                 'dec_fee' => $req->decFee,
                 'dec_bus_fee' => $req->decBusFee,
-                'academic_year' => $req->academicYear,               
+                'version_no' => $getData->version_no + 1,
                 'updated_at' => Carbon::now()
             ];
 
@@ -200,8 +206,9 @@ class FeeDefinitionController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $feeDefinition = $this->_mFeeDefinitions::findOrFail($req->id);
-            return responseMsgs(true, "", $feeDefinition, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // $feeDefinition = $this->_mFeeDefinitions::findOrFail($req->id);
+            $feeDefinitionGroupMap = $this->_mFeeDefinitions->getGroupById($req->id);
+            return responseMsgs(true, "Records", $feeDefinitionGroupMap, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
@@ -213,8 +220,9 @@ class FeeDefinitionController extends Controller
     public function retrieveAll(Request $req)
     {
         try {
-            $feeDefinition = $this->_mFeeDefinitions::orderByDesc('id')->get();
-            return responseMsgs(true, "", $feeDefinition, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // $feeDefinition = $this->_mFeeDefinitions::orderByDesc('id')->get();
+            $feeDefinitionGroupMap = $this->_mFeeDefinitions->retrieveAll();
+            return responseMsgs(true, "All Records", $feeDefinitionGroupMap, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
