@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
 
@@ -17,12 +18,13 @@ if (!function_exists("responseMsg")) {
     }
 }
 
-if(!function_exists('responseErrMsg')){
-    function responseErrMsg(){
-       $message = 'Records not found!';
-       $status = 'Fail';
-       $response = ['status'=>$status, 'message'=>$message];
-       return response()->json($response,404);
+if (!function_exists('responseErrMsg')) {
+    function responseErrMsg()
+    {
+        $message = 'Records not found!';
+        $status = 'Fail';
+        $response = ['status' => $status, 'message' => $message];
+        return response()->json($response, 404);
     }
 }
 
@@ -96,10 +98,11 @@ if (!function_exists("floatRound")) {
     }
 }
 
-if(!function_exists('getFormattedDate')){
-    function getFormattedDate($data, $format){
-       $formattedDate = date($format, strtotime($data));
-       return $formattedDate;
+if (!function_exists('getFormattedDate')) {
+    function getFormattedDate($data, $format)
+    {
+        $formattedDate = date($format, strtotime($data));
+        return $formattedDate;
     }
     //for print dob: getFormattedDate($customer->dob, 'd-m-y')
 }
@@ -499,10 +502,34 @@ if (!function_exists('decimalToSqMt')) {
  * | Api Response time for the the apis
  */
 
- if (!function_exists("responseTime")) {
+if (!function_exists("responseTime")) {
     function responseTime()
     {
         $responseTime = (microtime(true) - LARAVEL_START) * 1000;
         return round($responseTime, 2);
+    }
+}
+
+/**
+ * | Remove Null function in api responses
+ */
+if (!function_exists("remove_null")) {
+    function remove_null($data, $encrypt = false, array $key = ["id"])
+    {
+        $collection = collect($data)->map(function ($name, $index) use ($encrypt, $key) {
+            if (is_object($name) || is_array($name)) {
+                return remove_null($name, $encrypt, $key);
+            } else {
+                if ($encrypt && (in_array(strtolower($index), array_map(function ($keys) {
+                    return strtolower($keys);
+                }, $key)))) {
+                    return Crypt::encrypt($name);
+                } elseif (is_null($name))
+                    return "";
+                else
+                    return $name;
+            }
+        });
+        return $collection;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Master;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\DiscountGroup;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -34,13 +35,12 @@ class DiscountGroupController extends Controller
             'description' => 'required|string',
             'isClassFeeDiscount' => 'required|bool',
             'isBusFeeDiscount' => 'required|bool',
-            'schoolId' => 'required|numeric',
-            'academicYear' => 'required|max:9|min:9'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
+            $fYear = getFinancialYear(Carbon::now()->format('Y-m-d'));
             $isGroupExists = $this->_mDiscountGroups->readGroupByDiscountGroup($req->discountGroup, $req->academicYear);
             if (collect($isGroupExists)->isNotEmpty())
                 throw new Exception("Discount Group Already existing");
@@ -50,9 +50,9 @@ class DiscountGroupController extends Controller
                 "description" => $req->description,
                 "is_class_fee_discount" => $req->isClassFeeDiscount,
                 "is_bus_fee_discount" => $req->isBusFeeDiscount,
-                'school_id' => $req->schoolId,
+                'school_id' => authUser()->school_id,
                 'ip_address' => getClientIpAddress(),
-                'academic_year' => $req->academicYear,
+                'academic_year' => $fYear,
                 'created_by' => authUser()->id
             ];
             $this->_mDiscountGroups->store($metaReqs);
@@ -75,15 +75,13 @@ class DiscountGroupController extends Controller
             'description' => 'required|string',
             'isClassFeeDiscount' => 'required|bool',
             'isBusFeeDiscount' => 'required|bool',
-            'status' => 'nullable|in:active,deactive',
-            'schoolId' => 'required|numeric',
-            'academicYear' => 'required|max:9|min:9'
-
+            'status' => 'nullable|in:active,deactive'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
+            $fYear = getFinancialYear(Carbon::now()->format('Y-m-d'));
             $isGroupExists = $this->_mDiscountGroups->readGroupByDiscountGroup($req->discountGroup, $req->academicYear);
             if ($isGroupExists && $isGroupExists->where('id', '!=', $req->id)->isNotEmpty())
                 throw new Exception("Discount Group Already Existing");
@@ -96,7 +94,8 @@ class DiscountGroupController extends Controller
                 "description" => $req->description,
                 "is_class_fee_discount" => $req->isClassFeeDiscount,
                 "is_bus_fee_discount" => $req->isBusFeeDiscount,
-                'school_id' => $req->schoolId,
+                'school_id' => authUser()->school_id,
+                'academic_year' => $fYear,
                 'version_no' => $discountGroup->version_no + 1
             ];
 
