@@ -13,16 +13,15 @@ return new class extends Migration
     {
         Schema::create('fee_heads', function (Blueprint $table) {
             $table->id();
-            $table->integer('school_id');
-            $table->string('fee_head_name')->unique();
-            $table->string('fee_head_c_name')->nullable();
-            $table->integer('fee_code');
-            $table->string('fee_description');
-            $table->string('academic_year');
-            $table->string('created_by');
-            $table->string('ip_address');
-            $table->integer('version_no')->default(0);
-            $table->integer('is_deleted')->default(0);
+            $table->integer('fee_head_type_id');
+            $table->string('fee_head');
+            $table->string('description');
+            $table->string('academic_year');            //common for all table
+            $table->string('school_id');                //common for all table         
+            $table->string('created_by');               //common for all table   
+            $table->string('ip_address');               //common for all table   
+            $table->integer('version_no')->default(0);  //common for all table   
+            $table->integer('status')->default(1);      //1-Active, 2-Not Active
             $table->timestamps();
         });
     }

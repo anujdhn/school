@@ -4,56 +4,54 @@ namespace App\Http\Controllers\API\Master;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Master\FeeHeadType;
+use App\Models\Master\FeeHead;
 use Illuminate\Support\Str;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
 
-class FeeHeadTypeController extends Controller
+class FeeHeadController extends Controller
 {
-    private $_mFeeHeadTypes;
+    private $_mFeeHeads;
 
     public function __construct()
     {
-        $this->_mFeeHeadTypes = new FeeHeadType();
+        $this->_mFeeHeads = new feeHead();
     }
     /**
-     * | Created On-23-05-2023 
+     * | Created On-24-05-2023 
      * | Created By- Lakshmi Kumari
-     * | Fee Head Type Crud Operations
+     * | Fee Head Crud Operations
     */
 
     public function store(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'feeHeadType' => 'required|string',
-            'isAnnual' => 'required|numeric',
-            'isOptional' => 'required|numeric',
-            'isLateFineApplicable' => 'required|numeric',
+            'feeHeadTypeId' => 'required|numeric',
+            'feeHead' => 'required|string',
+            'description' => 'required|string',
             'academicYear' => 'required|string'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeHeadTypes->readFeeHeadTypeById($req->feeHeadType);
+            $isExists = $this->_mFeeHeads->readFeeHeadById($req->feeHead);
             if (collect($isExists)->isNotEmpty())
-                throw new Exception("Fee Head Type Already existing");
+                throw new Exception("Fee Head Already existing");
             $ip = getClientIpAddress();
             $createdBy = 'Admin';
             $schoolId = 'DAV_Ranchi_834001';
-            $metaReqs=[
-                'fee_head_type' => Str::ucFirst($req->feeHeadType),
-                'is_annual' => $req->isAnnual,
-                'is_optional' => $req->isOptional,
-                'is_latefee_applicable' => $req->isLateFineApplicable,
+            $metaReqs=[                
+                'fee_head_type_id' => $req->feeHeadTypeId,
+                'fee_head' => Str::ucFirst($req->feeHead),
+                'description' => $req->description,
                 'academic_year' => $req->academicYear,
                 'school_id' => $schoolId,
                 'created_by' => $createdBy,
                 'ip_address' => $ip
             ];
-            $this->_mFeeHeadTypes->store($metaReqs);
+            $this->_mFeeHeads->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -68,10 +66,9 @@ class FeeHeadTypeController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|numeric',
-            'feeHeadType' => 'required|string',
-            'isAnnual' => 'required|numeric',
-            'isOptional' => 'required|numeric',
-            'isLateFineApplicable' => 'required|numeric',
+            'feeHeadTypeId' => 'required|numeric',
+            'feeHead' => 'required|string',
+            'description' => 'required|string',
             'academicYear' => 'required|string',
             'status' => 'nullable|in:active,deactive'
         ]);
@@ -79,14 +76,13 @@ class FeeHeadTypeController extends Controller
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeHeadTypes->readFeeHeadTypeById($req->feeHeadType);
+            $isExists = $this->_mFeeHeads->readFeeHeadById($req->feeHead);
             if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
-                throw new Exception("Fee Head Type Already Existing");
-            $metaReqs = [ 
-                'fee_head_type' => Str::ucFirst($req->feeHeadType),
-                'is_annual' => $req->isAnnual,
-                'is_optional' => $req->isOptional,
-                'is_latefee_applicable' => $req->isLateFineApplicable,
+                throw new Exception("Fee Head Already Existing");
+            $metaReqs = [                 
+                'fee_head_type_id' => $req->feeHeadTypeId,
+                'fee_head' => Str::ucFirst($req->feeHead),
+                'description' => $req->description,
                 'academic_year' => $req->academicYear,
                 'updated_at' => Carbon::now()
             ];
@@ -98,8 +94,8 @@ class FeeHeadTypeController extends Controller
                 ]);
             }
 
-            $feeHeadType = $this->_mFeeHeadTypes::findOrFail($req->id);
-            $feeHeadType->update($metaReqs);
+            $feeHead = $this->_mFeeHeads::findOrFail($req->id);
+            $feeHead->update($metaReqs);
             return responseMsgs(true, "Successfully Updated", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -117,8 +113,10 @@ class FeeHeadTypeController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $feeHeadType = $this->_mFeeHeadTypes::findOrFail($req->id);
-            return responseMsgs(true, "", $feeHeadType, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // $feeHead = $this->_mFeeHeads::findOrFail($req->id);
+            $feeHead = $this->_mFeeHeads->showById($req->id);
+            // print_r($feeHead);die;
+            return responseMsgs(true, "", $feeHead, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
@@ -130,11 +128,11 @@ class FeeHeadTypeController extends Controller
     public function retrieveAll(Request $req)
     {
         try {
-            $feeHeadType = $this->_mFeeHeadTypes::orderByDesc('id')->get();
-            return responseMsgs(true, "", $feeHeadType, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            // $feeHead = $this->_mFeeHeads::orderByDesc('id')->get();
+            $feeHead = $this->_mFeeHeads->retrieveAll();
+            return responseMsgs(true, "", $feeHead, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
-   
 }

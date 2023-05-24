@@ -4,19 +4,20 @@ namespace App\Http\Controllers\API\Master;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Master\FeeHeadType;
+use App\Models\Master\FeeDemand;
 use Illuminate\Support\Str;
 use Exception;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
 
-class FeeHeadTypeController extends Controller
+
+class FeeDemandController extends Controller
 {
-    private $_mFeeHeadTypes;
+    private $_mFeeDemands;
 
     public function __construct()
     {
-        $this->_mFeeHeadTypes = new FeeHeadType();
+        $this->_mFeeDemands = new FeeDemand();
     }
     /**
      * | Created On-23-05-2023 
@@ -27,33 +28,47 @@ class FeeHeadTypeController extends Controller
     public function store(Request $req)
     {
         $validator = Validator::make($req->all(), [
-            'feeHeadType' => 'required|string',
-            'isAnnual' => 'required|numeric',
-            'isOptional' => 'required|numeric',
-            'isLateFineApplicable' => 'required|numeric',
+            'fyId' => 'required|numeric',
+            'monthNo' => 'required|numeric',
+            'demandDate' => 'required|date',
+            'studentId' => 'required|numeric',
+            'classFeeMasterId' => 'required|numeric',
+            'feeHead' => 'required|string',
+            'amount' => 'required|numeric',
+            'lateFee' => 'required|numeric',
+            'paymentDate' => 'required|date',
+            'paymentId' => 'required|numeric',
+            'remark' => 'required|string',            
             'academicYear' => 'required|string'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeHeadTypes->readFeeHeadTypeById($req->feeHeadType);
+            $isExists = $this->_mFeeDemands->readFeeDemandById($req->feeDemand);
             if (collect($isExists)->isNotEmpty())
-                throw new Exception("Fee Head Type Already existing");
+                throw new Exception("Fee Demand Already existing");
             $ip = getClientIpAddress();
             $createdBy = 'Admin';
             $schoolId = 'DAV_Ranchi_834001';
-            $metaReqs=[
-                'fee_head_type' => Str::ucFirst($req->feeHeadType),
-                'is_annual' => $req->isAnnual,
-                'is_optional' => $req->isOptional,
-                'is_latefee_applicable' => $req->isLateFineApplicable,
+            $metaReqs=[                
+                'fy_id' => $req->fyId,
+                'month_no' => $req->monthNo,
+                'demand_date' => $req->demandDate,
+                'student_id' => $req->studentId,
+                'class_fee_master_id' => $req->classFeeMasterId,
+                'fee_head' => $req->feeHead,
+                'amount' => $req->amount,
+                'late_fee' => $req->lateFee,
+                'payment_date' => $req->paymentDate,
+                'payment_id' => $req->paymentId,
+                'remark' => $req->remark,                
                 'academic_year' => $req->academicYear,
                 'school_id' => $schoolId,
                 'created_by' => $createdBy,
                 'ip_address' => $ip
             ];
-            $this->_mFeeHeadTypes->store($metaReqs);
+            $this->_mFeeDemands->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -68,10 +83,17 @@ class FeeHeadTypeController extends Controller
     {
         $validator = Validator::make($req->all(), [
             'id' => 'required|numeric',
-            'feeHeadType' => 'required|string',
-            'isAnnual' => 'required|numeric',
-            'isOptional' => 'required|numeric',
-            'isLateFineApplicable' => 'required|numeric',
+            'fyId' => 'required|numeric',
+            'monthNo' => 'required|numeric',
+            'demandDate' => 'required|date',
+            'studentId' => 'required|numeric',
+            'classFeeMasterId' => 'required|numeric',
+            'feeHead' => 'required|string',
+            'amount' => 'required|numeric',
+            'lateFee' => 'required|numeric',
+            'paymentDate' => 'required|date',
+            'paymentId' => 'required|numeric',
+            'remark' => 'required|string',
             'academicYear' => 'required|string',
             'status' => 'nullable|in:active,deactive'
         ]);
@@ -79,15 +101,22 @@ class FeeHeadTypeController extends Controller
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isExists = $this->_mFeeHeadTypes->readFeeHeadTypeById($req->feeHeadType);
+            $isExists = $this->_mFeeDemands->readFeeDemandById($req->feeDemand);
             if ($isExists && $isExists->where('id', '!=', $req->id)->isNotEmpty())
-                throw new Exception("Fee Head Type Already Existing");
+                throw new Exception("Fee Demand Already Existing");
             $metaReqs = [ 
-                'fee_head_type' => Str::ucFirst($req->feeHeadType),
-                'is_annual' => $req->isAnnual,
-                'is_optional' => $req->isOptional,
-                'is_latefee_applicable' => $req->isLateFineApplicable,
-                'academic_year' => $req->academicYear,
+                'fy_id' => $req->fyId,
+                'month_no' => $req->monthNo,
+                'demand_date' => $req->demandDate,
+                'student_id' => $req->studentId,
+                'class_fee_master_id' => $req->classFeeMasterId,
+                'fee_head' => $req->feeHead,
+                'amount' => $req->amount,
+                'late_fee' => $req->lateFee,
+                'payment_date' => $req->paymentDate,
+                'payment_id' => $req->paymentId,
+                'remark' => $req->remark,
+                'academic_year' => $req->academicYear,               
                 'updated_at' => Carbon::now()
             ];
 
@@ -98,8 +127,8 @@ class FeeHeadTypeController extends Controller
                 ]);
             }
 
-            $feeHeadType = $this->_mFeeHeadTypes::findOrFail($req->id);
-            $feeHeadType->update($metaReqs);
+            $feeDemand = $this->_mFeeDemands::findOrFail($req->id);
+            $feeDemand->update($metaReqs);
             return responseMsgs(true, "Successfully Updated", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -117,8 +146,8 @@ class FeeHeadTypeController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $feeHeadType = $this->_mFeeHeadTypes::findOrFail($req->id);
-            return responseMsgs(true, "", $feeHeadType, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $feeDemand = $this->_mFeeDemands::findOrFail($req->id);
+            return responseMsgs(true, "", $feeDemand, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
@@ -130,11 +159,10 @@ class FeeHeadTypeController extends Controller
     public function retrieveAll(Request $req)
     {
         try {
-            $feeHeadType = $this->_mFeeHeadTypes::orderByDesc('id')->get();
-            return responseMsgs(true, "", $feeHeadType, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            $feeDemand = $this->_mFeeDemands::orderByDesc('id')->get();
+            return responseMsgs(true, "", $feeDemand, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         }
     }
-   
 }
