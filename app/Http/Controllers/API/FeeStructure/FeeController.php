@@ -16,7 +16,56 @@ Created On : 06-May-2023
 Code Status : Open 
 */
 class FeeController extends Controller
-{
+{  
+    private $_mFeeHeadTypes;
+
+    public function __construct()
+    {
+        $this->_mFeeHeadTypes = new FeeHeadType();
+    }
+    /**
+     * | Created On-23-05-2023 
+     * | Created On- Lakshmi Kumari
+     * | Fee Head Type Crud Operations
+     */
+
+    public function store(Request $req)
+    {
+        $validator = Validator::make($req->all(), [
+            'feeHeadType'=>'required|string',
+            'isAnnual'=>'required|integer',
+            'isOptional' => 'required|integer',
+            'isLateFineApplicable'=>'required|integer',
+            'academicYear' => 'required|string',
+            'deviceId' => 'string'
+        ]);   
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            return response()->json([
+                'error' => $errors
+            ], 422);
+        }
+        try {
+            $ip = getClientIpAddress();
+            $createdBy = 'Admin';
+            $schoolId = 'DAV_Ranchi_834001';
+            $metaReqs=[
+                'fee_head_type' => Str::ucFirst($req->feeHeadType),
+                'is_annual' => $req->isAnnual,
+                'is_optional' => $req->isOptional,
+                'is_latefee_applicable' => $req->isLateFineApplicable,
+                'academic_year' => $req->academicYear,
+                'school_id' => $schoolId,
+                'created_by' => $createdBy,
+                'ip_address' => $ip
+            ]; 
+            $this->_mFeeHeadTypes->store($metaReqs);
+            return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        } catch (Exception $e) {
+            return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+        }
+     }
+
     //================================ Fee Head Type API Start ========================================================
     /**
      *  @OA\Post(
@@ -35,14 +84,15 @@ class FeeController extends Controller
      *  @OA\Response(response=404,description="not found"),     
      *)
     **/
-    public function addFeeHeadType(Request $req){
+    public function postFeeHeadType(Request $req){
         //Description: store master records
         $validator = Validator::make($req->all(), [
             'feeHeadType'=>'required|string',
             'isAnnual'=>'required|integer',
             'isOptional' => 'required|integer',
             'isLateFineApplicable'=>'required|integer',
-            'academicYear' => 'required|string'
+            'academicYear' => 'required|string',
+            'deviceId' => 'string'
         ]);   
         if ($validator->fails()) {
             $errors = $validator->errors();
@@ -52,24 +102,36 @@ class FeeController extends Controller
         }
         try 
         {  
-            // $mObject = new FeeHeadType();
-            // $feeHeadType = Str::ucFirst($req->feeHeadType);
-            // $isAnnual = $req->isAnnual;
-            // $isOptional = $req->isOptional;
-            // $isLateFineApplicable = $req->isLateFineApplicable;
-            // $academicYear = $req->academicYear;
-            // $ip = getClientIpAddress();
-            // $createdBy = 'Admin';
-            // $schoolId = 'DAV_Ranchi_834001';
+            $ip = getClientIpAddress();
+            $createdBy = 'Admin';
+            $schoolId = 'DAV_Ranchi_834001';
+            $mDeviceId = $req->deviceId ?? ""; 
+            $getResponseTime = responseTime();
+            $mFeeHeadType=new FeeHeadType();
 
-            $data = array();
-                $mObject = new FeeHeadType();
-                $data = $mObject->insertData($req);
-                $mDeviceId = $req->deviceId ?? ""; 
-                $getResponseTime = responseTime();        
-                return responseMsgs(true, "Records added successfully", $data, "API_ID_235","", $getResponseTime, "post", $mDeviceId);
+            $metaReqs=[
+                'fee_head_type' => Str::ucFirst($req->feeHeadType),
+                'is_annual' => $req->isAnnual,
+                'is_optional' => $req->isOptional,
+                'is_latefee_applicable' => $req->isLateFineApplicable,
+                'academic_year' => $req->academicYear,
+                'school_id' => $schoolId,
+                'created_by' => $createdBy,
+                'ip_address' => $ip
+            ];            
+             $checkExist = FeeHeadType::where([['fee_head_type','=',$req->feeHeadType],['is_deleted','=','0']])->count(); 
+            // dd($checkExist);
+            $checkDeleted = FeeHeadType::where([['fee_head_type','=',$req->feeHeadType],['is_deleted','=','1']])->count();
+            // print_r($checkDeleted); die; 
+            if($checkExist > 0){
+            throw new Exception("Fee head type name is already existing!");
+            } 
+            if($checkDeleted >= 0){
+                $mFeeHeadType->store($metaReqs);
+            }
+            return responseMsgs(true, "Records added successfully", "", "API_ID_235","", $getResponseTime, "post", $mDeviceId);
         } catch (Exception $e) {
-            return responseMsgs(false, $e->getMessage(), $data, "API_ID_235","", "", "post", $mDeviceId);
+            return responseMsgs(false, $e->getMessage(), "", "API_ID_235","", "", "post", $mDeviceId);
         } 
     }
 
@@ -84,12 +146,15 @@ class FeeController extends Controller
     //  * @OA\JsonContent(@OA\Property(property="status", type="string", example="200"),
     //  *  @OA\Property(property="data",type="object"))))
     // */
-    public function viewFeeHeadType(Request $req){
+    public function readFeeHeadType(Request $req){
         //Description : Get all records
         try {
-            $data = FeeHeadType::list(); 
-            $mDeviceId = $req->deviceId ?? "";
-            $getResponseTime = responseTime();  
+            // $data = FeeHeadType::list(); 
+            // $mDeviceId = $req->deviceId ?? "";
+            // $getResponseTime = responseTime();  
+            $getResponseTime = responseTime();
+            $mFeeHeadType=new FeeHeadType();
+
             return responseMsgs(true, "View all records", $data, "API_ID_236","", $getResponseTime, "get", $mDeviceId);
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), $data, "API_ID_236","", "", "get", $mDeviceId);
@@ -108,7 +173,7 @@ class FeeController extends Controller
     //  *    @OA\Property(property="data",type="object")
     //  *  )))
     // **/
-    public function viewFeeHeadTypeById(Request $req){ 
+    public function getFeeHeadTypeById(Request $req){ 
         //Description: Get records by id
         try {
             $listbyId = new FeeHeadType();

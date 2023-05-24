@@ -11,12 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fee_head_types', function (Blueprint $table) {
+        Schema::create('fee_demands', function (Blueprint $table) {
             $table->id();
-            $table->string('fee_head_type');
-            $table->integer('is_annual');
-            $table->integer('is_optional');
-            $table->integer('is_latefee_applicable');
+            $table->string('fy_id');
+            $table->integer('month_no');
+            $table->date('demand_date');
+            $table->integer('student_id');
+            $table->integer('class_fee_master_id');
+            $table->string('fee_head');
+            $table->integer('amount');
+            $table->integer('late_fee');
+            $table->date('payment_date');
+            $table->integer('payment_id');
+            $table->string('remark');
             $table->string('academic_year');            //common for all table
             $table->string('school_id');                //common for all table         
             $table->string('created_by');               //common for all table   
@@ -32,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fee_head_types');
+        Schema::dropIfExists('fee_demands');
     }
 };

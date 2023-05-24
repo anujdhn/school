@@ -11,12 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('fee_head_types', function (Blueprint $table) {
+        Schema::create('class_fee_masters', function (Blueprint $table) {
             $table->id();
-            $table->string('fee_head_type');
-            $table->integer('is_annual');
-            $table->integer('is_optional');
-            $table->integer('is_latefee_applicable');
+            $table->integer('class_id');
+            $table->integer('fee_head_id');
+            $table->integer('fee_amount');
+            $table->integer('discount');
+            $table->integer('net_fee');
+            $table->integer('levied_in_jan');
+            $table->integer('levied_in_feb');
+            $table->integer('levied_in_mar');
+            $table->integer('levied_in_apr');
+            $table->integer('levied_in_may');
+            $table->integer('levied_in_jun');
+            $table->integer('levied_in_jul');
+            $table->integer('levied_in_aug');
+            $table->integer('levied_in_sep');
+            $table->integer('levied_in_oct');
+            $table->integer('levied_in_nov');
+            $table->integer('levied_in_dec');
             $table->string('academic_year');            //common for all table
             $table->string('school_id');                //common for all table         
             $table->string('created_by');               //common for all table   
@@ -32,6 +45,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fee_head_types');
+        Schema::dropIfExists('class_fee_masters');
     }
 };

@@ -267,11 +267,15 @@ Route::controller(EmployeeController::class)->group(function() {
     Route::post('/search_employee_by_id','searchEmpByEmpId'); //search BY ID --------------------------- API_ID_197  
 });
 
+Route::controller(FeeController::class)->group(function () {
+    Route::post('feehead-type/crud/store', 'store');
+});
+
 Route::controller(FeeController::class)->group(function(){
 
-    Route::post('/add_feehead_type','addFeeHeadType');//Add -------------------------------------------- API_ID_235
-    Route::post('/view_feehead_type','viewFeeHeadType');//View ------------------------------------------ API_ID_236
-    Route::post('/view_feehead_type_byId','viewFeeHeadTypeById');//View By ID -------------------------- API_ID_237
+    Route::post('/add_feehead_type','postFeeHeadType');//Add -------------------------------------------- API_ID_235
+    Route::post('/view_feehead_type','readFeeHeadType');//View ------------------------------------------ API_ID_236
+    Route::post('/view_feehead_type_byId','getFeeHeadTypeById');//View By ID -------------------------- API_ID_237
     Route::post('/edit_feehead_type','editFeeHeadType');//Edit By ID -------------------------- -------- API_ID_238
     Route::post('/delete_feehead_type','deleteFeeHeadType');//Delete By ID -----------------------   --- API_ID_239
     
@@ -311,6 +315,13 @@ Route::controller(TransportController::class)->group(function() {
     Route::post('/edit_vehicle','editVehicle');//Edit  --------------------------------------------------- API_ID_232
     Route::post('/delete_vehicle','deleteVehicleById');//Delete  ----------------------------------------- API_ID_233
     Route::delete('/delete_all_vehicle','deleteAllVehicle');//Delete All Record-------------------------- API_ID_234
+
+    Route::post('/add_pickup_point','addPickupPoint'); //Add  ------------------------------------------------- API_ID_235
+    Route::get('/view_pickup_point','viewPickupPoint');//View  ---------------------------------------------------- API_ID_236
+    Route::post('/view_pickup_point_by_id','viewPickupPointById');//View  By ID  ---------------------------------- API_ID_237
+    Route::post('/edit_pickup_point','editPickupPoint');//Edit  --------------------------------------------------- API_ID_238
+    Route::post('/delete_pickup_point','deletePickupPointById');//Delete  ----------------------------------------- API_ID_239
+    Route::delete('/delete_all_pickup_point','deleteAllPickupPoint');//Delete All Record-------------------------- API_ID_240
 });
 
 Route::controller(StudentController::class)->group(function() {

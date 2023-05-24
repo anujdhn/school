@@ -81,7 +81,7 @@ class Vehicle extends Model
       //view all 
       public static function list() {
         $viewAll = Vehicle::select(
-
+            'id',
             'vehicle_no',
             'max_seating_capacity',
             'gprs',
