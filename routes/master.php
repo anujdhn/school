@@ -10,6 +10,7 @@ use App\Http\Controllers\API\Master\DiscountGroupController;
 use App\Http\Controllers\API\Master\FeeHeadTypeController;
 use App\Http\Controllers\API\Master\FeeHeadController;
 use App\Http\Controllers\API\Master\ClassFeeMasterController;
+use App\Http\Controllers\API\master\SchoolMasterController;
 
 //  Protected Routes
 
@@ -35,6 +36,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('bus-fee/crud/edit', 'edit');                               // Update Record
         Route::post('bus-fee/crud/show', 'show');                              // Show Record by id
         Route::post('bus-fee/crud/retrieve-all', 'retrieveAll');              // Fetch all data
+    });
+
+    // School Masters
+    Route::controller(SchoolMasterController::class)->group(function () {
+        Route::post('school/crud/store', 'store');                                  // Add Record
+        Route::post('school/crud/edit', 'edit');                                    // Edit Record
+        Route::post('school/crud/show', 'show');                                    // Show Record
+        Route::post('school/crud/retrieve-all', 'retrieveAll');                  // Fetch all Records
+        Route::post('school/crud/deactive', 'deactive');                  // Deactive Record
     });
 });
 // });
@@ -87,7 +97,7 @@ Route::controller(ClassFeeMasterController::class)->group(function () {
  Description: Crud api for fee deands
 */
 // Route::middleware('auth:sanctum')->group(function () {
-    Route::controller(FeeDemandController::class)->group(function () {
+Route::controller(FeeDemandController::class)->group(function () {
     Route::post('fee-demand/crud/store', 'store');                    // Store 
     Route::post('fee-demand/crud/edit', 'edit');                      // Update
     Route::post('fee-demand/crud/show', 'show');                      // Get by Id
