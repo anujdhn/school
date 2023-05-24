@@ -33,13 +33,15 @@ class DiscountGroupController extends Controller
             'discountPercent' => 'required|numeric',
             'description' => 'required|string',
             'isClassFeeDiscount' => 'required|bool',
-            'isBusFeeDiscount' => 'required|bool'
+            'isBusFeeDiscount' => 'required|bool',
+            'schoolId' => 'required|numeric',
+            'academicYear' => 'required|max:9|min:9'
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isGroupExists = $this->_mDiscountGroups->readGroupByDiscountGroup($req->discountGroup);
+            $isGroupExists = $this->_mDiscountGroups->readGroupByDiscountGroup($req->discountGroup, $req->academicYear);
             if (collect($isGroupExists)->isNotEmpty())
                 throw new Exception("Discount Group Already existing");
             $metaReqs = [
@@ -47,7 +49,11 @@ class DiscountGroupController extends Controller
                 "discount_percent" => $req->discountPercent,
                 "description" => $req->description,
                 "is_class_fee_discount" => $req->isClassFeeDiscount,
-                "is_bus_fee_discount" => $req->isBusFeeDiscount
+                "is_bus_fee_discount" => $req->isBusFeeDiscount,
+                'school_id' => $req->schoolId,
+                'ip_address' => getClientIpAddress(),
+                'academic_year' => $req->academicYear,
+                'created_by' => authUser()->id
             ];
             $this->_mDiscountGroups->store($metaReqs);
             return responseMsgs(true, "Successfully Saved", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -69,22 +75,29 @@ class DiscountGroupController extends Controller
             'description' => 'required|string',
             'isClassFeeDiscount' => 'required|bool',
             'isBusFeeDiscount' => 'required|bool',
-            'status' => 'nullable|in:active,deactive'
+            'status' => 'nullable|in:active,deactive',
+            'schoolId' => 'required|numeric',
+            'academicYear' => 'required|max:9|min:9'
+
         ]);
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
 
         try {
-            $isGroupExists = $this->_mDiscountGroups->readGroupByDiscountGroup($req->discountGroup);
+            $isGroupExists = $this->_mDiscountGroups->readGroupByDiscountGroup($req->discountGroup, $req->academicYear);
             if ($isGroupExists && $isGroupExists->where('id', '!=', $req->id)->isNotEmpty())
                 throw new Exception("Discount Group Already Existing");
+
+            $discountGroup = $this->_mDiscountGroups::findOrFail($req->id);
 
             $metaReqs = [
                 "discount_group" => $req->discountGroup,
                 "discount_percent" => $req->discountPercent,
                 "description" => $req->description,
                 "is_class_fee_discount" => $req->isClassFeeDiscount,
-                "is_bus_fee_discount" => $req->isBusFeeDiscount
+                "is_bus_fee_discount" => $req->isBusFeeDiscount,
+                'school_id' => $req->schoolId,
+                'version_no' => $discountGroup->version_no + 1
             ];
 
             if (isset($req->status)) {                  // In Case of Deactivation or Activation of Discount Group
@@ -94,7 +107,6 @@ class DiscountGroupController extends Controller
                 ]);
             }
 
-            $discountGroup = $this->_mDiscountGroups::findOrFail($req->id);
             $discountGroup->update($metaReqs);
             return responseMsgs(true, "Successfully Updated", [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
@@ -113,7 +125,7 @@ class DiscountGroupController extends Controller
         if ($validator->fails())
             return responseMsgs(false, $validator->errors(), []);
         try {
-            $discountGroup = $this->_mDiscountGroups::findOrFail($req->id);
+            $discountGroup = $this->_mDiscountGroups->getGroupById($req->id);
             return responseMsgs(true, "", $discountGroup, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -126,7 +138,7 @@ class DiscountGroupController extends Controller
     public function retrieveAll(Request $req)
     {
         try {
-            $discountGroup = $this->_mDiscountGroups::orderByDesc('id')->get();
+            $discountGroup = $this->_mDiscountGroups->retrieveAll();
             return responseMsgs(true, "", $discountGroup, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
