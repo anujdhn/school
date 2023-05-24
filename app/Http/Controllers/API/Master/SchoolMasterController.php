@@ -147,7 +147,7 @@ class SchoolMasterController extends Controller
 
         try {
             $school = $this->_mSchoolMasters->getSchoolById($req->id);
-            return responseMsgs(true, "School Details", $school, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "School Details", remove_null($school), "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
@@ -162,7 +162,7 @@ class SchoolMasterController extends Controller
         try {
             $school = $this->_mSchoolMasters::all();
             $school = $school->sortByDesc('id')->values();
-            return responseMsgs(true, "School Details", $school, "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
+            return responseMsgs(true, "School Details", remove_null($school), "", "1.0", responseTime(), "POST", $req->deviceId ?? "");
         } catch (Exception $e) {
             DB::rollBack();
             return responseMsgs(false, $e->getMessage(), [], "", "1.0", responseTime(), "POST", $req->deviceId ?? "");

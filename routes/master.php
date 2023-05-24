@@ -10,6 +10,7 @@ use App\Http\Controllers\API\Master\DiscountGroupController;
 use App\Http\Controllers\API\Master\FeeHeadTypeController;
 use App\Http\Controllers\API\Master\FeeHeadController;
 use App\Http\Controllers\API\Master\ClassFeeMasterController;
+use App\Http\Controllers\API\Master\DiscountGroupMapController;
 use App\Http\Controllers\API\master\SchoolMasterController;
 
 //  Protected Routes
